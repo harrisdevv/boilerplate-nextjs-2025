@@ -1,12 +1,12 @@
 'use client'
 
-import { SessionProvider } from 'next-auth/react'
+import { AuthProvider } from '@/lib/firebase/auth-context'
 
 interface ProvidersProps {
   children: React.ReactNode
 }
 
 export function Providers({ children }: ProvidersProps) {
-  return <SessionProvider>{children}</SessionProvider>
+  return <AuthProvider>{children}</AuthProvider>
 }
 

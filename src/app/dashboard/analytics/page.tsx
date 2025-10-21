@@ -1,7 +1,7 @@
-import { redirect } from 'next/navigation'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
+'use client'
+
+import { useAuth } from '@/lib/firebase/auth-context'
+import { ProtectedRoute } from '@/components/auth/protected-route'
 import { AppLayout } from '@/components/layout/app-layout'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -43,26 +43,25 @@ const fakeAnalyticsData = {
   ]
 }
 
-export default async function AnalyticsPage() {
-  const session = await getServerSession(authOptions)
+export default function AnalyticsPage() {
+  const { user } = useAuth()
 
-  if (!session?.user) {
-    redirect('/auth/signin')
+  const userData = {
+    id: user?.uid || '',
+    name: user?.displayName || 'User',
+    email: user?.email || '',
+    image: user?.photoURL || null,
+    role: 'user'
   }
 
-  const subscription = await prisma.subscription.findUnique({
-    where: { userId: session.user.id },
-  }).catch(() => null)
-
-  console.log('Analytics page render:', { session, subscription })
-
-  const subscriptionData = subscription || {
+  const subscriptionData = {
     paymentMode: 'LIFETIME',
     status: 'ACTIVE'
   }
 
   return (
-    <AppLayout user={session.user} subscription={subscriptionData}>
+    <ProtectedRoute>
+    <AppLayout user={userData} subscription={subscriptionData}>
       <div className="p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -227,6 +226,7 @@ export default async function AnalyticsPage() {
         </div>
       </div>
     </AppLayout>
+    </ProtectedRoute>
   )
 }
 

@@ -1,7 +1,7 @@
-import { redirect } from 'next/navigation'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
+'use client'
+
+import { useAuth } from '@/lib/firebase/auth-context'
+import { ProtectedRoute } from '@/components/auth/protected-route'
 import { AppLayout } from '@/components/layout/app-layout'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -67,32 +67,21 @@ const fakeSubscriptionData = {
   ]
 }
 
-export default async function ProfilePage() {
-  const session = await getServerSession(authOptions)
+export default function ProfilePage() {
+  const { user } = useAuth()
 
-  if (!session?.user) {
-    redirect('/auth/signin')
-  }
-
-  // In real app, fetch from database
-  const subscription = await prisma.subscription.findUnique({
-    where: { userId: session.user.id },
-  }).catch(() => null)
-
-  console.log('Profile page render:', { session, subscription })
-
-  // Use real data if available, otherwise use fake data
   const userData = {
     ...fakeUserData,
-    name: session.user.name || fakeUserData.name,
-    email: session.user.email || fakeUserData.email,
-    avatar: session.user.image || fakeUserData.avatar,
-    role: session.user.role || fakeUserData.role,
+    name: user?.displayName || fakeUserData.name,
+    email: user?.email || fakeUserData.email,
+    avatar: user?.photoURL || fakeUserData.avatar,
+    role: 'user',
   }
 
-  const subscriptionData = subscription || fakeSubscriptionData
+  const subscriptionData = fakeSubscriptionData
 
   return (
+    <ProtectedRoute>
     <AppLayout user={userData} subscription={subscriptionData}>
       <div className="p-6 max-w-6xl mx-auto space-y-6">
         {/* Header */}
@@ -319,5 +308,6 @@ export default async function ProfilePage() {
         </div>
       </div>
     </AppLayout>
+    </ProtectedRoute>
   )
 }

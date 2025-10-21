@@ -1,7 +1,7 @@
-import { redirect } from 'next/navigation'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
+'use client'
+
+import { useAuth } from '@/lib/firebase/auth-context'
+import { ProtectedRoute } from '@/components/auth/protected-route'
 import { AppLayout } from '@/components/layout/app-layout'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -42,33 +42,31 @@ const fakeDashboardData = {
   ]
 }
 
-export default async function DashboardPage() {
-  const session = await getServerSession(authOptions)
+export default function DashboardPage() {
+  const { user } = useAuth()
 
-  if (!session?.user) {
-    redirect('/auth/signin')
+  const userData = {
+    id: user?.uid || '',
+    name: user?.displayName || 'User',
+    email: user?.email || '',
+    image: user?.photoURL || null,
+    role: 'user'
   }
 
-  const subscription = await prisma.subscription.findUnique({
-    where: { userId: session.user.id },
-  }).catch(() => null)
-
-  console.log('Dashboard render:', { session, subscription })
-
-  // Use fake subscription data if none exists
-  const subscriptionData = subscription || {
+  const subscriptionData = {
     paymentMode: 'LIFETIME',
     status: 'ACTIVE'
   }
 
   return (
-    <AppLayout user={session.user} subscription={subscriptionData}>
+    <ProtectedRoute>
+    <AppLayout user={userData} subscription={subscriptionData}>
       <div className="p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-            <p className="text-muted-foreground">Welcome back, {session.user.name || 'User'}</p>
+            <p className="text-muted-foreground">Welcome back, {user?.displayName || 'User'}</p>
           </div>
           <Button>
             <Plus className="w-4 h-4 mr-2" />
@@ -164,27 +162,21 @@ export default async function DashboardPage() {
               <CardDescription>Your current plan</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {subscription ? (
+              {subscriptionData ? (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Plan:</span>
                     <Badge variant="outline" className="text-yellow-600 border-yellow-300">
                       <Crown className="w-3 h-3 mr-1" />
-                      {subscription.paymentMode === 'LIFETIME' ? 'Lifetime' : subscription.interval}
+                      {subscriptionData.paymentMode === 'LIFETIME' ? 'Lifetime' : 'Monthly'}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Status:</span>
                     <Badge variant="default" className="bg-green-500">
-                      {subscription.status}
+                      {subscriptionData.status}
                     </Badge>
                   </div>
-                  {subscription.currentPeriodEnd && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Renews:</span>
-                      <span className="text-sm">{new Date(subscription.currentPeriodEnd).toLocaleDateString()}</span>
-                    </div>
-                  )}
                 </div>
               ) : (
                 <div className="text-center space-y-3">
@@ -261,6 +253,7 @@ export default async function DashboardPage() {
         </div>
       </div>
     </AppLayout>
+    </ProtectedRoute>
   )
 }
 

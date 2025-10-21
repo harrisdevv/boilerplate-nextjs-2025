@@ -1,11 +1,34 @@
 'use client'
 
-import { signIn } from 'next-auth/react'
+import { useAuth } from '@/lib/firebase/auth-context'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Header } from '@/components/layout/header'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 export default function SignInPage() {
+  const { signInWithGoogle, user } = useAuth()
+  const router = useRouter()
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (user) {
+      router.push('/dashboard')
+    }
+  }, [user, router])
+
+  const handleGoogleSignIn = async () => {
+    try {
+      setError('')
+      await signInWithGoogle()
+      router.push('/dashboard')
+    } catch (error: any) {
+      console.error('Sign-in error:', error)
+      setError(error.message || 'Failed to sign in. Please try again.')
+    }
+  }
+
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
@@ -21,7 +44,7 @@ export default function SignInPage() {
                 className="w-full"
                 variant="outline"
                 size="lg"
-                onClick={() => signIn('google', { callbackUrl: '/dashboard' })}
+                onClick={handleGoogleSignIn}
               >
                 <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">
                   <path
@@ -43,6 +66,10 @@ export default function SignInPage() {
                 </svg>
                 Continue with Google
               </Button>
+
+              {error && (
+                <p className="text-sm text-red-500 text-center">{error}</p>
+              )}
             </div>
 
             <div className="mt-6 text-center text-sm text-muted-foreground">
@@ -61,4 +88,3 @@ export default function SignInPage() {
     </div>
   )
 }
-

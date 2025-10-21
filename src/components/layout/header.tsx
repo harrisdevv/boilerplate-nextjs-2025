@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useSession, signOut } from 'next-auth/react'
+import { useAuth } from '@/lib/firebase/auth-context'
 import { Button } from '@/components/ui/button'
 import { Menu, X } from 'lucide-react'
 import { useState } from 'react'
@@ -16,7 +16,7 @@ const navItems = [
 ]
 
 export function Header() {
-  const { data: session } = useSession()
+  const { user, signOut } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
@@ -64,7 +64,7 @@ export function Header() {
             <Link href="/blog" className="transition-colors hover:text-primary">
               Blog
             </Link>
-            {session && (
+            {user && (
               <Link href="/dashboard" className="transition-colors hover:text-primary">
                 Dashboard
               </Link>
@@ -74,9 +74,9 @@ export function Header() {
 
         {/* Right side */}
         <div className="flex flex-1 items-center justify-end space-x-2">
-          {session ? (
+          {user ? (
             <>
-              <span className="text-sm hidden md:inline">{session.user?.email}</span>
+              <span className="text-sm hidden md:inline">{user.email}</span>
               <Button variant="ghost" onClick={() => signOut()}>
                 Sign Out
               </Button>
@@ -120,7 +120,7 @@ export function Header() {
             >
               Blog
             </Link>
-            {session && (
+            {user && (
               <Link
                 href="/dashboard"
                 className="text-sm font-medium transition-colors hover:text-primary"
