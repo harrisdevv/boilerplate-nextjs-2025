@@ -259,7 +259,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Purchase Date:</span>
-                  <span className="text-sm">{new Date(subscriptionData.purchaseDate || subscriptionData.createdAt || '2024-01-15').toLocaleDateString()}</span>
+                  <span className="text-sm">{new Date(subscriptionData.purchaseDate || '2024-01-15').toLocaleDateString()}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Amount Paid:</span>
