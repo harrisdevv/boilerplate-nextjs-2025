@@ -1,0 +1,215 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  role          String    @default("user") // user, admin
+  
+  accounts      Account[]
+  sessions      Session[]
+  subscription  Subscription?
+  apiKeys       ApiKey[]
+  blogPosts     BlogPost[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+  PAUSED
+}
+
+enum PaymentMode {
+  LIFETIME
+  SUBSCRIPTION
+}
+
+enum SubscriptionInterval {
+  MONTHLY
+  ANNUALLY
+}
+
+model Subscription {
+  id                   String               @id @default(cuid())
+  userId               String               @unique
+  user                 User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Payment details
+  paymentMode          PaymentMode
+  paddleSubscriptionId String?              @unique
+  paddleCustomerId     String?
+  
+  // Subscription details (only used if paymentMode is SUBSCRIPTION)
+  interval             SubscriptionInterval?
+  status               SubscriptionStatus   @default(ACTIVE)
+  currentPeriodStart   DateTime?
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean              @default(false)
+  
+  // Lifetime payment details (only used if paymentMode is LIFETIME)
+  lifetimePurchaseDate DateTime?
+  
+  // Common fields
+  price                Decimal              @db.Decimal(10, 2)
+  currency             String               @default("USD")
+  
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+
+  @@index([userId])
+  @@index([paddleSubscriptionId])
+}
+
+model ApiKey {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  name        String   // e.g., "OpenRouter", "Anthropic"
+  encryptedKey String  @db.Text // AES-256-GCM encrypted
+  iv          String   // Initialization vector for encryption
+  
+  isActive    Boolean  @default(true)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+}
+
+enum BlogStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model BlogPost {
+  id          String      @id @default(cuid())
+  slug        String      @unique
+  title       String
+  description String?     @db.Text
+  content     String      @db.Text
+  coverImage  String?
+  
+  authorId    String
+  author      User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  
+  status      BlogStatus  @default(DRAFT)
+  
+  // SEO
+  metaTitle       String?
+  metaDescription String?     @db.Text
+  metaKeywords    String?
+  ogImage         String?
+  
+  // Stats
+  views       Int         @default(0)
+  
+  publishedAt DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  tags        BlogTag[]
+  categories  BlogCategory[]
+
+  @@index([authorId])
+  @@index([slug])
+  @@index([status])
+}
+
+model BlogTag {
+  id    String @id @default(cuid())
+  name  String @unique
+  slug  String @unique
+  
+  posts BlogPost[]
+  
+  createdAt DateTime @default(now())
+}
+
+model BlogCategory {
+  id          String @id @default(cuid())
+  name        String @unique
+  slug        String @unique
+  description String?
+  
+  posts BlogPost[]
+  
+  createdAt DateTime @default(now())
+}
+
+model SiteConfig {
+  id    String @id @default("site-config")
+  
+  // Payment mode toggle
+  paymentMode PaymentMode @default(LIFETIME)
+  
+  // Lifetime payment settings
+  lifetimePrice Decimal? @db.Decimal(10, 2)
+  
+  // Subscription settings
+  monthlyPrice  Decimal? @db.Decimal(10, 2)
+  annualPrice   Decimal? @db.Decimal(10, 2)
+  
+  // SEO defaults
+  siteName        String  @default("Your App Name")
+  siteDescription String  @default("Your app description")
+  siteUrl         String  @default("https://yourapp.com")
+  
+  updatedAt DateTime @updatedAt
+}
+
