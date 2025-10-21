@@ -41,3 +41,4 @@ prisma/migrations/
 # lighthouse
 lighthouse-reports/
 
+.env.local
