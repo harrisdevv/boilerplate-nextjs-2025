@@ -14,7 +14,8 @@ import {
   Zap,
   Crown,
   Plus,
-  TrendingUp
+  TrendingUp,
+  Brain
 } from 'lucide-react'
 
 export default function DashboardPage() {
@@ -51,11 +52,40 @@ export default function DashboardPage() {
 
         {/* Main Action Cards */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {/* Business Analysis */}
+          {/* Comprehensive Analysis - New Feature */}
+          <Card className="md:col-span-2 lg:col-span-1 border-2 border-primary/20 bg-primary/5">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Brain className="w-5 h-5 text-primary" />
+                AI-Powered Analysis
+              </CardTitle>
+              <CardDescription>Upload your business documents and get complete analysis in one click</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button className="w-full justify-start" asChild>
+                <a href="/dashboard/comprehensive-analysis">
+                  <Brain className="w-4 h-4 mr-2" />
+                  Comprehensive Analysis
+                  <div className="ml-auto">
+                    <div className="px-2 py-1 bg-primary text-primary-foreground text-xs rounded-full">
+                      NEW
+                    </div>
+                  </div>
+                </a>
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                📄 Upload PDF business documents<br/>
+                🤖 AI-powered SWOT, USP & Business Profile<br/>
+                ⚡ Get results in under 2 minutes
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Individual Business Analysis Tools */}
           <Card className="md:col-span-2 lg:col-span-1">
             <CardHeader>
-              <CardTitle>Business Analysis</CardTitle>
-              <CardDescription>Understand your business better</CardDescription>
+              <CardTitle>Individual Tools</CardTitle>
+              <CardDescription>Specific business analysis tools</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <Button variant="outline" className="w-full justify-start" asChild>
