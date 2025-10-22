@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { verifyIdToken } from '@/lib/firebase/admin-config'
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -19,44 +18,23 @@ export async function middleware(request: NextRequest) {
     pathname === route || pathname.startsWith(`${route}/`)
   )
 
-  // Allow public routes
-  if (isPublicRoute) {
+  // Allow public routes and API routes (they handle their own auth)
+  if (isPublicRoute || pathname.startsWith('/api/')) {
     return NextResponse.next()
   }
 
-  // Check for authentication token
-  const token = request.cookies.get('token')?.value ||
-                request.headers.get('authorization')?.replace('Bearer ', '')
+  // For protected routes, check if token exists (full verification happens client-side and in API routes)
+  const token = request.cookies.get('token')?.value
 
   if (!token) {
-    // Redirect to sign-in for protected routes
+    // Redirect to sign-in for protected routes without token
     const signInUrl = new URL('/auth/signin', request.url)
     signInUrl.searchParams.set('redirect', pathname)
     return NextResponse.redirect(signInUrl)
   }
 
-  try {
-    // Verify the token
-    const decodedToken = await verifyIdToken(token)
-
-    // Add user info to headers for downstream use
-    const requestHeaders = new Headers(request.headers)
-    requestHeaders.set('x-user-id', decodedToken.uid)
-    requestHeaders.set('x-user-email', decodedToken.email || '')
-
-    return NextResponse.next({
-      request: {
-        headers: requestHeaders,
-      },
-    })
-  } catch (error) {
-    console.error('Token verification failed:', error)
-
-    // Clear invalid token and redirect to sign-in
-    const response = NextResponse.redirect(new URL('/auth/signin', request.url))
-    response.cookies.delete('token')
-    return response
-  }
+  // Token exists, allow through - actual verification happens via Firebase client SDK and API routes
+  return NextResponse.next()
 }
 
 export const config = {

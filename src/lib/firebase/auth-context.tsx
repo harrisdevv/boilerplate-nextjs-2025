@@ -47,13 +47,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const token = await user.getIdToken()
         document.cookie = `token=${token}; path=/; max-age=3600; samesite=strict${process.env.NODE_ENV === 'production' ? '; secure' : ''}`
 
-        // Sync user data with database
+        // Sync user data with database via API endpoint
         try {
-          const { syncUserWithDatabase } = await import('@/lib/firebase/admin-config')
-          await syncUserWithDatabase(user.uid, {
-            name: user.displayName,
-            email: user.email,
-            picture: user.photoURL,
+          await fetch('/api/auth/sync', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token }),
           })
         } catch (error) {
           console.error('Error syncing user data:', error)
