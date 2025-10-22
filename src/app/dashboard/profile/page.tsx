@@ -6,52 +6,17 @@ import { AppLayout } from '@/components/layout/app-layout'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { 
-  User, 
-  Mail, 
-  Calendar, 
-  MapPin, 
-  Globe, 
-  Twitter, 
-  Linkedin, 
-  Github,
+import {
+  User,
+  Mail,
+  Calendar,
   Edit,
   Crown,
   Shield,
-  Clock,
   Activity
 } from 'lucide-react'
 
-// Fake data for demonstration
-const fakeUserData = {
-  name: 'Sarah Johnson',
-  email: 'sarah.johnson@example.com',
-  avatar: null,
-  role: 'USER',
-  bio: 'Digital marketing specialist passionate about social media automation and content creation. Helping businesses grow their online presence through strategic content planning.',
-  location: 'San Francisco, CA',
-  website: 'https://sarahjohnson.dev',
-  twitter: '@sarahjohnson',
-  linkedin: 'sarah-johnson-marketing',
-  github: 'sarahjohnson',
-  joinedDate: '2024-01-15',
-  lastActive: '2025-01-21T10:30:00Z',
-  timezone: 'PST (UTC-8)',
-  language: 'English',
-  stats: {
-    postsCreated: 247,
-    scheduledPosts: 89,
-    totalViews: 125430,
-    engagement: 8.7
-  },
-  preferences: {
-    emailNotifications: true,
-    pushNotifications: false,
-    weeklyReports: true,
-    marketingEmails: false
-  }
-}
-
+// Simplified data for MVP
 const fakeSubscriptionData = {
   paymentMode: 'LIFETIME',
   status: 'ACTIVE',
@@ -59,11 +24,10 @@ const fakeSubscriptionData = {
   amount: 49,
   features: [
     'Unlimited content generation',
-    'Advanced analytics',
-    'Priority support',
-    'Custom branding',
-    'API access',
-    'Team collaboration'
+    'Business analysis tools',
+    '30-day content planning',
+    'AI-powered post creation',
+    'Priority support'
   ]
 }
 
@@ -71,11 +35,13 @@ export default function ProfilePage() {
   const { user } = useAuth()
 
   const userData = {
-    ...fakeUserData,
-    name: user?.displayName || fakeUserData.name,
-    email: user?.email || fakeUserData.email,
-    avatar: user?.photoURL || fakeUserData.avatar,
-    role: 'user',
+    name: user?.displayName || 'User',
+    email: user?.email || '',
+    avatar: user?.photoURL || null,
+    role: 'USER',
+    bio: 'Content marketing automation user',
+    joinedDate: '2024-01-15',
+    lastActive: new Date().toISOString(),
   }
 
   const subscriptionData = fakeSubscriptionData
@@ -153,39 +119,8 @@ export default function ProfilePage() {
                   <span className="text-sm">{userData.email}</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <MapPin className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm">{userData.location}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Globe className="w-4 h-4 text-muted-foreground" />
-                  <a href={userData.website} className="text-sm text-primary hover:underline">
-                    {userData.website}
-                  </a>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Clock className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm">{userData.timezone}</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Social Links */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Social Links</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <Twitter className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm">{userData.twitter}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Linkedin className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm">{userData.linkedin}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Github className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm">{userData.github}</span>
+                  <Calendar className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm">Member since {new Date(userData.joinedDate).toLocaleDateString()}</span>
                 </div>
               </CardContent>
             </Card>
@@ -202,34 +137,6 @@ export default function ProfilePage() {
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   {userData.bio}
                 </p>
-              </CardContent>
-            </Card>
-
-            {/* Stats */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Activity Stats</CardTitle>
-                <CardDescription>Your usage statistics</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-primary">{userData.stats.postsCreated}</div>
-                    <div className="text-xs text-muted-foreground">Posts Created</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-primary">{userData.stats.scheduledPosts}</div>
-                    <div className="text-xs text-muted-foreground">Scheduled</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-primary">{userData.stats.totalViews.toLocaleString()}</div>
-                    <div className="text-xs text-muted-foreground">Total Views</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-primary">{userData.stats.engagement}%</div>
-                    <div className="text-xs text-muted-foreground">Engagement</div>
-                  </div>
-                </div>
               </CardContent>
             </Card>
 
@@ -259,48 +166,23 @@ export default function ProfilePage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Purchase Date:</span>
-                  <span className="text-sm">{new Date(subscriptionData.purchaseDate || '2024-01-15').toLocaleDateString()}</span>
+                  <span className="text-sm">{new Date(subscriptionData.purchaseDate).toLocaleDateString()}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Amount Paid:</span>
-                  <span className="text-sm font-semibold">${subscriptionData.amount || 49}</span>
+                  <span className="text-sm font-semibold">${subscriptionData.amount}</span>
                 </div>
-                
+
                 <div className="pt-4 border-t">
                   <h4 className="text-sm font-medium mb-3">Included Features:</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    {(subscriptionData.features || fakeSubscriptionData.features).map((feature: string, index: number) => (
+                    {subscriptionData.features.map((feature: string, index: number) => (
                       <div key={index} className="flex items-center gap-2">
                         <div className="w-1.5 h-1.5 bg-primary rounded-full" />
                         <span className="text-sm text-muted-foreground">{feature}</span>
                       </div>
                     ))}
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Account Details */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Account Details</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Member Since:</span>
-                  <span className="text-sm">{new Date(userData.joinedDate).toLocaleDateString()}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Last Active:</span>
-                  <span className="text-sm">{new Date(userData.lastActive).toLocaleString()}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Language:</span>
-                  <span className="text-sm">{userData.language}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Time Zone:</span>
-                  <span className="text-sm">{userData.timezone}</span>
                 </div>
               </CardContent>
             </Card>

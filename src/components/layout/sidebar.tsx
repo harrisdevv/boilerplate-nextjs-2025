@@ -3,13 +3,11 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { 
-  Home, 
-  User, 
-  Settings, 
-  CreditCard, 
-  BarChart3, 
-  FileText, 
+import {
+  Home,
+  User,
+  Settings,
+  CreditCard,
   HelpCircle,
   ChevronLeft,
   ChevronRight,
@@ -35,8 +33,6 @@ interface SidebarProps {
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
-  { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
-  { name: 'Content', href: '/dashboard/content', icon: FileText },
   { name: 'Profile', href: '/dashboard/profile', icon: User },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
   { name: 'Billing', href: '/dashboard/billing', icon: CreditCard },
@@ -64,7 +60,7 @@ export function Sidebar({ user, subscription }: SidebarProps) {
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
               <Zap className="w-4 h-4 text-primary-foreground" />
             </div>
-            <span className="font-semibold">SocialAI</span>
+            <span className="font-semibold">HienMarketer</span>
           </div>
         )}
         <Button
@@ -170,7 +166,7 @@ export function Sidebar({ user, subscription }: SidebarProps) {
       <div className="p-4 border-t">
         {!collapsed && (
           <div className="text-xs text-muted-foreground text-center">
-            © 2025 SocialAI
+            © 2025 HienMarketer
           </div>
         )}
       </div>

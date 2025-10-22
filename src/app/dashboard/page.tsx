@@ -6,41 +6,16 @@ import { AppLayout } from '@/components/layout/app-layout'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { 
-  TrendingUp, 
-  Users, 
-  FileText, 
+import {
+  Users,
+  FileText,
   Calendar,
   BarChart3,
-  Clock,
   Zap,
   Crown,
   Plus,
-  ArrowRight
+  TrendingUp
 } from 'lucide-react'
-
-// Fake data for demonstration
-const fakeDashboardData = {
-  stats: {
-    totalPosts: 247,
-    scheduledPosts: 89,
-    totalViews: 125430,
-    engagement: 8.7,
-    followers: 12450,
-    weeklyGrowth: 12.5
-  },
-  recentActivity: [
-    { id: 1, action: 'Created post', content: 'Social Media Marketing Tips', time: '2 hours ago', type: 'create' },
-    { id: 2, action: 'Scheduled post', content: 'Weekly Newsletter', time: '4 hours ago', type: 'schedule' },
-    { id: 3, action: 'Analytics report', content: 'Monthly Performance', time: '1 day ago', type: 'analytics' },
-    { id: 4, action: 'Updated profile', content: 'Bio and links', time: '2 days ago', type: 'profile' },
-  ],
-  upcomingPosts: [
-    { id: 1, title: 'Monday Motivation Quote', platform: 'Twitter', scheduledFor: '2025-01-22T09:00:00Z' },
-    { id: 2, title: 'Product Feature Highlight', platform: 'LinkedIn', scheduledFor: '2025-01-22T14:00:00Z' },
-    { id: 3, title: 'Behind the Scenes Video', platform: 'Instagram', scheduledFor: '2025-01-23T11:00:00Z' },
-  ]
-}
 
 export default function DashboardPage() {
   const { user } = useAuth()
@@ -70,85 +45,65 @@ export default function DashboardPage() {
           </div>
           <Button>
             <Plus className="w-4 h-4 mr-2" />
-            Create Post
+            Generate Content Plan
           </Button>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Posts</CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{fakeDashboardData.stats.totalPosts}</div>
-              <p className="text-xs text-muted-foreground">
-                +12 from last month
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Scheduled</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{fakeDashboardData.stats.scheduledPosts}</div>
-              <p className="text-xs text-muted-foreground">
-                Next 30 days
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Views</CardTitle>
-              <BarChart3 className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{fakeDashboardData.stats.totalViews.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground">
-                +{fakeDashboardData.stats.weeklyGrowth}% from last week
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Engagement</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{fakeDashboardData.stats.engagement}%</div>
-              <p className="text-xs text-muted-foreground">
-                Above average
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
+        {/* Main Action Cards */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {/* Recent Activity */}
-          <Card className="md:col-span-2">
+          {/* Business Analysis */}
+          <Card className="md:col-span-2 lg:col-span-1">
             <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-              <CardDescription>Your latest actions and updates</CardDescription>
+              <CardTitle>Business Analysis</CardTitle>
+              <CardDescription>Understand your business better</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {fakeDashboardData.recentActivity.map((activity) => (
-                  <div key={activity.id} className="flex items-center gap-4">
-                    <div className="w-2 h-2 bg-primary rounded-full" />
-                    <div className="flex-1 space-y-1">
-                      <p className="text-sm font-medium">{activity.action}</p>
-                      <p className="text-sm text-muted-foreground">{activity.content}</p>
-                    </div>
-                    <div className="text-xs text-muted-foreground">{activity.time}</div>
-                  </div>
-                ))}
-              </div>
+            <CardContent className="space-y-4">
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <a href="/dashboard/swot">
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  SWOT Analysis
+                </a>
+              </Button>
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <a href="/dashboard/usp">
+                  <TrendingUp className="w-4 h-4 mr-2" />
+                  USP Generator
+                </a>
+              </Button>
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <a href="/dashboard/business-profile">
+                  <Users className="w-4 h-4 mr-2" />
+                  Business Profile
+                </a>
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Content Planning */}
+          <Card className="md:col-span-2 lg:col-span-1">
+            <CardHeader>
+              <CardTitle>Content Planning</CardTitle>
+              <CardDescription>Create your content strategy</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <a href="/dashboard/content-planner">
+                  <Calendar className="w-4 h-4 mr-2" />
+                  30-Day Content Plan
+                </a>
+              </Button>
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <a href="/dashboard/post-composer">
+                  <FileText className="w-4 h-4 mr-2" />
+                  Post Composer
+                </a>
+              </Button>
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <a href="/dashboard/content-themes">
+                  <Zap className="w-4 h-4 mr-2" />
+                  Content Themes
+                </a>
+              </Button>
             </CardContent>
           </Card>
 
@@ -191,66 +146,47 @@ export default function DashboardPage() {
               )}
             </CardContent>
           </Card>
-
-          {/* Upcoming Posts */}
-          <Card className="md:col-span-2">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="w-4 h-4" />
-                Upcoming Posts
-              </CardTitle>
-              <CardDescription>Your scheduled content</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {fakeDashboardData.upcomingPosts.map((post) => (
-                  <div key={post.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium">{post.title}</p>
-                      <p className="text-xs text-muted-foreground">{post.platform}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(post.scheduledFor).toLocaleDateString()}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(post.scheduledFor).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Quick Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-              <CardDescription>Common tasks</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Button variant="outline" className="w-full justify-start" asChild>
-                <a href="/dashboard/content">
-                  <FileText className="w-4 h-4 mr-2" />
-                  Manage Content
-                </a>
-              </Button>
-              <Button variant="outline" className="w-full justify-start" asChild>
-                <a href="/dashboard/analytics">
-                  <BarChart3 className="w-4 h-4 mr-2" />
-                  View Analytics
-                </a>
-              </Button>
-              <Button variant="outline" className="w-full justify-start" asChild>
-                <a href="/dashboard/settings">
-                  <Users className="w-4 h-4 mr-2" />
-                  Account Settings
-                </a>
-              </Button>
-            </CardContent>
-          </Card>
         </div>
+
+        {/* Getting Started */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Getting Started</CardTitle>
+            <CardDescription>Follow these steps to create your content strategy</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-4">
+              <div className="text-center space-y-2">
+                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+                  <span className="text-lg font-bold">1</span>
+                </div>
+                <h3 className="font-medium">Business Analysis</h3>
+                <p className="text-sm text-muted-foreground">Complete your SWOT and USP analysis</p>
+              </div>
+              <div className="text-center space-y-2">
+                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+                  <span className="text-lg font-bold">2</span>
+                </div>
+                <h3 className="font-medium">Content Themes</h3>
+                <p className="text-sm text-muted-foreground">Define your content pillars</p>
+              </div>
+              <div className="text-center space-y-2">
+                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+                  <span className="text-lg font-bold">3</span>
+                </div>
+                <h3 className="font-medium">Generate Plan</h3>
+                <p className="text-sm text-muted-foreground">Create your 30-day content calendar</p>
+              </div>
+              <div className="text-center space-y-2">
+                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+                  <span className="text-lg font-bold">4</span>
+                </div>
+                <h3 className="font-medium">Create Content</h3>
+                <p className="text-sm text-muted-foreground">Generate and customize your posts</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </AppLayout>
     </ProtectedRoute>
