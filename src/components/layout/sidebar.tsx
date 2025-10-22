@@ -1,21 +1,24 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { 
-  Home, 
-  User, 
-  Settings, 
-  CreditCard, 
-  BarChart3, 
-  FileText, 
+import {
+  Home,
+  User,
+  Settings,
+  CreditCard,
+  BarChart3,
+  FileText,
   HelpCircle,
   ChevronLeft,
   ChevronRight,
   Crown,
-  Zap
+  Zap,
+  Lock
 } from 'lucide-react'
+import { hasLifetimeAccess } from '@/lib/auth'
+import { useAuth } from '@/lib/firebase/auth-context'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
@@ -45,12 +48,30 @@ const navigation = [
 
 export function Sidebar({ user, subscription }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false)
+  const [hasAccess, setHasAccess] = useState<boolean | null>(null)
   const pathname = usePathname()
+  const { user: authUser } = useAuth()
 
   const isLifetimeUser = subscription?.paymentMode === 'LIFETIME'
   const hasActiveSubscription = subscription?.status === 'ACTIVE'
 
-  console.log('Sidebar render:', { user, subscription, isLifetimeUser, hasActiveSubscription })
+  useEffect(() => {
+    const checkAccess = async () => {
+      if (authUser?.uid) {
+        try {
+          const access = await hasLifetimeAccess(authUser.uid)
+          setHasAccess(access)
+        } catch (error) {
+          console.error('Error checking access in sidebar:', error)
+          setHasAccess(false)
+        }
+      }
+    }
+
+    checkAccess()
+  }, [authUser?.uid])
+
+  console.log('Sidebar render:', { user, subscription, isLifetimeUser, hasActiveSubscription, hasAccess })
 
   return (
     <div className={cn(
@@ -125,40 +146,56 @@ export function Sidebar({ user, subscription }: SidebarProps) {
       <nav className="flex-1 p-4 space-y-2">
         {navigation.map((item) => {
           const isActive = pathname === item.href
+          const isLocked = !hasAccess && item.href !== '/dashboard'
+
           return (
-            <Link
-              key={item.name}
-              href={item.href}
-              className={cn(
-                'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors',
-                isActive 
-                  ? 'bg-primary text-primary-foreground' 
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted',
-                collapsed && 'justify-center'
+            <div key={item.name} className="relative">
+              <Link
+                href={isLocked ? '#' : item.href}
+                className={cn(
+                  'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors w-full',
+                  isActive
+                    ? 'bg-primary text-primary-foreground'
+                    : isLocked
+                      ? 'text-muted-foreground/50 cursor-not-allowed opacity-50'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted',
+                  collapsed && 'justify-center'
+                )}
+                onClick={isLocked ? (e) => e.preventDefault() : undefined}
+              >
+                <item.icon className="w-4 h-4 flex-shrink-0" />
+                {!collapsed && (
+                  <>
+                    <span>{item.name}</span>
+                    {isLocked && <Lock className="w-3 h-3 ml-auto text-muted-foreground/50" />}
+                  </>
+                )}
+              </Link>
+              {isLocked && !collapsed && (
+                <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 bg-popover text-popover-foreground text-xs px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                  Upgrade to access this feature
+                </div>
               )}
-            >
-              <item.icon className="w-4 h-4 flex-shrink-0" />
-              {!collapsed && <span>{item.name}</span>}
-            </Link>
+            </div>
           )
         })}
       </nav>
 
       {/* Upgrade CTA */}
-      {!hasActiveSubscription && !collapsed && (
+      {hasAccess === false && !collapsed && (
         <div className="p-4 border-t">
-          <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+          <Card className="bg-gradient-to-br from-destructive/10 to-destructive/5 border-destructive/20">
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-2">
-                <Crown className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium">Upgrade Now</span>
+                <Lock className="w-4 h-4 text-destructive" />
+                <span className="text-sm font-medium">Payment Required</span>
               </div>
               <p className="text-xs text-muted-foreground mb-3">
-                Get lifetime access for just $49 (Early Bird)
+                Upgrade to lifetime access to unlock all features
               </p>
               <Link href="/#pricing">
-                <Button size="sm" className="w-full">
-                  Upgrade to Lifetime
+                <Button size="sm" className="w-full" variant="destructive">
+                  Upgrade Now - $49
                 </Button>
               </Link>
             </CardContent>

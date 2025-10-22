@@ -6,17 +6,22 @@ import { AppLayout } from '@/components/layout/app-layout'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { 
-  TrendingUp, 
-  Users, 
-  FileText, 
+import { PricingSection } from '@/components/landing/pricing-section'
+import { hasLifetimeAccess } from '@/lib/auth'
+import { useEffect, useState } from 'react'
+import {
+  TrendingUp,
+  Users,
+  FileText,
   Calendar,
   BarChart3,
   Clock,
   Zap,
   Crown,
   Plus,
-  ArrowRight
+  ArrowRight,
+  Lock,
+  AlertTriangle
 } from 'lucide-react'
 
 // Fake data for demonstration
@@ -44,6 +49,8 @@ const fakeDashboardData = {
 
 export default function DashboardPage() {
   const { user } = useAuth()
+  const [hasAccess, setHasAccess] = useState<boolean | null>(null)
+  const [loading, setLoading] = useState(true)
 
   const userData = {
     id: user?.uid || '',
@@ -58,21 +65,93 @@ export default function DashboardPage() {
     status: 'ACTIVE'
   }
 
+  useEffect(() => {
+    const checkAccess = async () => {
+      if (user?.uid) {
+        try {
+          const access = await hasLifetimeAccess(user.uid)
+          setHasAccess(access)
+        } catch (error) {
+          console.error('Error checking access:', error)
+          setHasAccess(false)
+        }
+      }
+      setLoading(false)
+    }
+
+    checkAccess()
+  }, [user?.uid])
+
+  if (loading) {
+    return (
+      <ProtectedRoute>
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-4 text-muted-foreground">Loading...</p>
+          </div>
+        </div>
+      </ProtectedRoute>
+    )
+  }
+
+  if (!hasAccess) {
+    return (
+      <ProtectedRoute>
+        <AppLayout user={userData} subscription={subscriptionData}>
+          <div className="p-6 space-y-6">
+            {/* Payment Required Header */}
+            <div className="text-center space-y-4 py-12">
+              <div className="flex items-center justify-center gap-2 text-destructive">
+                <Lock className="w-8 h-8" />
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <h1 className="text-3xl font-bold tracking-tight">Payment Required</h1>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+                To access the full dashboard and all features, you need to purchase lifetime access.
+                This is a one-time payment that gives you unlimited access forever.
+              </p>
+            </div>
+
+            {/* Pricing Section */}
+            <div className="max-w-4xl mx-auto">
+              <PricingSection />
+            </div>
+
+            {/* Additional Info */}
+            <div className="text-center space-y-4 py-8">
+              <div className="bg-muted/50 rounded-lg p-6 max-w-2xl mx-auto">
+                <h3 className="text-lg font-semibold mb-2">Why Lifetime Access?</h3>
+                <ul className="text-sm text-muted-foreground space-y-2 text-left">
+                  <li>• Full access to all dashboard features</li>
+                  <li>• Unlimited content creation and management</li>
+                  <li>• Priority support and updates</li>
+                  <li>• No recurring fees or subscriptions</li>
+                  <li>• 14-day money-back guarantee</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </AppLayout>
+      </ProtectedRoute>
+    )
+  }
+
   return (
     <ProtectedRoute>
-    <AppLayout user={userData} subscription={subscriptionData}>
-      <div className="p-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-            <p className="text-muted-foreground">Welcome back, {user?.displayName || 'User'}</p>
+      <AppLayout user={userData} subscription={subscriptionData}>
+        <div className="p-6 space-y-6">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+              <p className="text-muted-foreground">Welcome back, {user?.displayName || 'User'}</p>
+            </div>
+            <Button>
+              <Plus className="w-4 h-4 mr-2" />
+              Create Post
+            </Button>
           </div>
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
-            Create Post
-          </Button>
-        </div>
 
         {/* Stats Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
