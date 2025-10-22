@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PricingSection } from '@/components/landing/pricing-section'
-import { hasLifetimeAccess } from '@/lib/auth'
+import { hasLifetimeAccess, getUserSubscription } from '@/lib/auth'
 import { useEffect, useState } from 'react'
 import {
   TrendingUp,
@@ -51,6 +51,10 @@ export default function DashboardPage() {
   const { user } = useAuth()
   const [hasAccess, setHasAccess] = useState<boolean | null>(null)
   const [loading, setLoading] = useState(true)
+  const [subscriptionData, setSubscriptionData] = useState<{
+    paymentMode: string
+    status: string
+  } | null>(null)
 
   const userData = {
     id: user?.uid || '',
@@ -60,20 +64,20 @@ export default function DashboardPage() {
     role: 'user'
   }
 
-  const subscriptionData = {
-    paymentMode: 'LIFETIME',
-    status: 'ACTIVE'
-  }
-
   useEffect(() => {
     const checkAccess = async () => {
       if (user?.uid) {
         try {
-          const access = await hasLifetimeAccess(user.uid)
+          const [access, subscription] = await Promise.all([
+            hasLifetimeAccess(user.uid),
+            getUserSubscription(user.uid)
+          ])
           setHasAccess(access)
+          setSubscriptionData(subscription)
         } catch (error) {
           console.error('Error checking access:', error)
           setHasAccess(false)
+          setSubscriptionData(null)
         }
       }
       setLoading(false)
@@ -89,9 +93,15 @@ export default function DashboardPage() {
       if (urlParams.get('payment') === 'success') {
         // Clear the URL parameter
         window.history.replaceState({}, '', window.location.pathname)
-        // Force re-check access
+        // Force re-check access and subscription
         if (user?.uid) {
-          hasLifetimeAccess(user.uid).then(setHasAccess)
+          Promise.all([
+            hasLifetimeAccess(user.uid),
+            getUserSubscription(user.uid)
+          ]).then(([access, subscription]) => {
+            setHasAccess(access)
+            setSubscriptionData(subscription)
+          })
         }
       }
     }
@@ -101,7 +111,13 @@ export default function DashboardPage() {
   useEffect(() => {
     const interval = setInterval(() => {
       if (user?.uid) {
-        hasLifetimeAccess(user.uid).then(setHasAccess)
+        Promise.all([
+          hasLifetimeAccess(user.uid),
+          getUserSubscription(user.uid)
+        ]).then(([access, subscription]) => {
+          setHasAccess(access)
+          setSubscriptionData(subscription)
+        })
       }
     }, 2000)
 

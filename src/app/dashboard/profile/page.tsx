@@ -6,7 +6,7 @@ import { AppLayout } from '@/components/layout/app-layout'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { hasLifetimeAccess } from '@/lib/auth'
+import { hasLifetimeAccess, getUserSubscription } from '@/lib/auth'
 import { useEffect, useState } from 'react'
 import {
   User,

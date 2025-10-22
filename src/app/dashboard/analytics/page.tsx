@@ -5,7 +5,7 @@ import { ProtectedRoute } from '@/components/auth/protected-route'
 import { AppLayout } from '@/components/layout/app-layout'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { hasLifetimeAccess } from '@/lib/auth'
+import { hasLifetimeAccess, getUserSubscription } from '@/lib/auth'
 import { useEffect, useState } from 'react'
 import {
   TrendingUp,
@@ -52,6 +52,10 @@ export default function AnalyticsPage() {
   const { user } = useAuth()
   const [hasAccess, setHasAccess] = useState<boolean | null>(null)
   const [loading, setLoading] = useState(true)
+  const [subscriptionData, setSubscriptionData] = useState<{
+    paymentMode: string
+    status: string
+  } | null>(null)
 
   const userData = {
     id: user?.uid || '',
@@ -61,20 +65,20 @@ export default function AnalyticsPage() {
     role: 'user'
   }
 
-  const subscriptionData = {
-    paymentMode: 'LIFETIME',
-    status: 'ACTIVE'
-  }
-
   useEffect(() => {
     const checkAccess = async () => {
       if (user?.uid) {
         try {
-          const access = await hasLifetimeAccess(user.uid)
+          const [access, subscription] = await Promise.all([
+            hasLifetimeAccess(user.uid),
+            getUserSubscription(user.uid)
+          ])
           setHasAccess(access)
+          setSubscriptionData(subscription)
         } catch (error) {
           console.error('Error checking access:', error)
           setHasAccess(false)
+          setSubscriptionData(null)
         }
       }
       setLoading(false)
