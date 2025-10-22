@@ -20,7 +20,8 @@ import {
   Loader2,
   TrendingUp,
   Star,
-  ArrowRight
+  ArrowRight,
+  AlertTriangle
 } from 'lucide-react'
 
 interface UspData {
