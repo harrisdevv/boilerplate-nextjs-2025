@@ -69,6 +69,11 @@ export function Sidebar({ user, subscription }: SidebarProps) {
     }
 
     checkAccess()
+
+    // Re-check access every 2 seconds to catch payment updates
+    const interval = setInterval(checkAccess, 2000)
+
+    return () => clearInterval(interval)
   }, [authUser?.uid])
 
   console.log('Sidebar render:', { user, subscription, isLifetimeUser, hasActiveSubscription, hasAccess })

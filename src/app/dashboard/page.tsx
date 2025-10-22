@@ -97,6 +97,17 @@ export default function DashboardPage() {
     }
   }, [user?.uid])
 
+  // Re-check access periodically to catch updates from other tabs/windows
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (user?.uid) {
+        hasLifetimeAccess(user.uid).then(setHasAccess)
+      }
+    }, 2000)
+
+    return () => clearInterval(interval)
+  }, [user?.uid])
+
   if (loading) {
     return (
       <ProtectedRoute>

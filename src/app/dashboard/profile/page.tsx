@@ -102,6 +102,11 @@ export default function ProfilePage() {
     }
 
     checkAccess()
+
+    // Re-check access periodically to catch updates from other tabs/windows
+    const interval = setInterval(checkAccess, 2000)
+
+    return () => clearInterval(interval)
   }, [user?.uid])
 
   if (loading) {
