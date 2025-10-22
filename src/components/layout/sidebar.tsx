@@ -6,9 +6,6 @@ import { usePathname } from 'next/navigation'
 import {
   Home,
   User,
-  Settings,
-  CreditCard,
-  HelpCircle,
   ChevronLeft,
   ChevronRight,
   Crown,
@@ -34,9 +31,6 @@ interface SidebarProps {
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
   { name: 'Profile', href: '/dashboard/profile', icon: User },
-  { name: 'Settings', href: '/dashboard/settings', icon: Settings },
-  { name: 'Billing', href: '/dashboard/billing', icon: CreditCard },
-  { name: 'Help', href: '/dashboard/help', icon: HelpCircle },
 ]
 
 export function Sidebar({ user, subscription }: SidebarProps) {

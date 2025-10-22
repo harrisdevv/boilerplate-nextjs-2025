@@ -47,13 +47,20 @@ model User {
   emailVerified DateTime?
   image         String?
   role          String    @default("user") // user, admin
-  
+
   accounts      Account[]
   sessions      Session[]
   subscription  Subscription?
   apiKeys       ApiKey[]
   blogPosts     BlogPost[]
-  
+
+  // Business Analysis relations
+  businessProfile BusinessProfile?
+  swotAnalyses    SwotAnalysis[]
+  uspAnalyses     UspAnalysis[]
+  contentPlans    ContentPlan[]
+  postSpecs       PostSpec[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -192,24 +199,181 @@ model BlogCategory {
   createdAt DateTime @default(now())
 }
 
+// Business Analysis Models
+model BusinessProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Basic business info
+  companyName String?
+  industry    String?
+  website     String?
+  description String?  @db.Text
+
+  // Target audience
+  targetAudience     String? @db.Text
+  targetDemographics String? @db.Text
+  targetPsychographics String? @db.Text
+
+  // Brand personality
+  brandVoice      String?   @db.Text
+  brandValues     String?   @db.Text
+  brandPersonality String?  @db.Text
+
+  // Competitive landscape
+  mainCompetitors  String? @db.Text
+  marketPosition   String? @db.Text
+  uniqueValue      String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model SwotAnalysis {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title       String   @default("SWOT Analysis")
+  description String?  @db.Text
+
+  // SWOT components
+  strengths  String?  @db.Text
+  weaknesses  String?  @db.Text
+  opportunities String? @db.Text
+  threats    String?  @db.Text
+
+  // AI-generated insights
+  insights   String?  @db.Text
+  recommendations String? @db.Text
+
+  isCompleted Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model UspAnalysis {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title       String   @default("USP Analysis")
+
+  // USP components
+  targetMarket     String? @db.Text
+  problemSolved    String? @db.Text
+  solutionOffered  String? @db.Text
+  keyDifferentiator String? @db.Text
+
+  // Generated USP options
+  generatedUsps    String? @db.Text // JSON string of multiple USP options
+  selectedUsp      String? @db.Text
+
+  // Testing data
+  testResults      String? @db.Text
+  performanceMetrics String? @db.Text
+
+  isCompleted Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model ContentPlan {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String?  @db.Text
+
+  // Plan configuration
+  startDate   DateTime
+  endDate     DateTime
+  themes      String?  @db.Text // JSON array of content themes
+  platforms   String?  @db.Text // JSON array of target platforms
+
+  // Generated plan
+  generatedPlan String? @db.Text // JSON of the 30-day plan
+
+  status      String   @default("draft") // draft, active, completed
+
+  postSpecs   PostSpec[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model PostSpec {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  contentPlanId String?
+  contentPlan   ContentPlan? @relation(fields: [contentPlanId], references: [id], onDelete: SetNull)
+
+  // Post content
+  title       String?
+  content     String?  @db.Text
+  outline     String?  @db.Text
+
+  // Platform variants
+  linkedinPost   String? @db.Text
+  twitterPost    String? @db.Text
+  facebookPost   String? @db.Text
+  instagramPost  String? @db.Text
+
+  // Post metadata
+  scheduledDate  DateTime?
+  platforms      String?  @db.Text // JSON array of platforms
+  hashtags       String?  @db.Text
+  cta            String?  @db.Text
+
+  // AI suggestions
+  suggestedAssets String? @db.Text
+  ownerInserts   String?  @db.Text // Places for personalization
+
+  // Authenticity tracking
+  authenticityScore    Float?
+  specificityMarkers   String? @db.Text // JSON array of specific elements
+
+  status      String   @default("draft") // draft, ready, posted, archived
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([contentPlanId])
+}
+
 model SiteConfig {
   id    String @id @default("site-config")
-  
+
   // Payment mode toggle
   paymentMode PaymentMode @default(LIFETIME)
-  
+
   // Lifetime payment settings
   lifetimePrice Decimal? @db.Decimal(10, 2)
-  
+
   // Subscription settings
   monthlyPrice  Decimal? @db.Decimal(10, 2)
   annualPrice   Decimal? @db.Decimal(10, 2)
-  
+
   // SEO defaults
   siteName        String  @default("Your App Name")
   siteDescription String  @default("Your app description")
   siteUrl         String  @default("https://yourapp.com")
-  
+
   updatedAt DateTime @updatedAt
 }
 

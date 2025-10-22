@@ -1,10 +1,4 @@
 import { logger } from '@/lib/logger'
-import { decrypt } from '@/lib/encryption'
-
-interface OpenRouterConfig {
-  apiKey: string
-  baseUrl?: string
-}
 
 interface Message {
   role: 'system' | 'user' | 'assistant'
@@ -37,20 +31,26 @@ interface CompletionResponse {
 
 class OpenRouterService {
   private baseUrl = 'https://openrouter.ai/api/v1'
+  private apiKey: string
+
+  constructor() {
+    this.apiKey = process.env.OPENROUTER_API_KEY || ''
+    if (!this.apiKey) {
+      logger.warn('OpenRouter API key not found in environment variables', {
+        context: 'openrouter',
+      })
+    }
+  }
 
   /**
    * Create a completion using OpenRouter
-   * @param apiKey - User's encrypted API key info
    * @param params - Completion parameters
    */
-  async createCompletion(
-    encryptedKey: string,
-    iv: string,
-    params: CompletionParams
-  ): Promise<CompletionResponse> {
+  async createCompletion(params: CompletionParams): Promise<CompletionResponse> {
     try {
-      // Decrypt the API key
-      const apiKey = decrypt(encryptedKey, iv)
+      if (!this.apiKey) {
+        throw new Error('OpenRouter API key not configured')
+      }
 
       logger.debug('Creating OpenRouter completion', {
         context: 'openrouter',
@@ -61,9 +61,9 @@ class OpenRouterService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey}`,
+          Authorization: `Bearer ${this.apiKey}`,
           'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-          'X-Title': process.env.NEXT_PUBLIC_APP_NAME || 'Your App',
+          'X-Title': 'HienMarketer',
         },
         body: JSON.stringify({
           model: params.model,
@@ -98,6 +98,22 @@ class OpenRouterService {
       logger.error('OpenRouter completion failed', error, { context: 'openrouter' })
       throw error
     }
+  }
+
+  /**
+   * Create a completion using the legacy BYOK approach (for backward compatibility)
+   * @param encryptedKey - User's encrypted API key info
+   * @param iv - Initialization vector
+   * @param params - Completion parameters
+   */
+  async createCompletionWithUserKey(
+    encryptedKey: string,
+    iv: string,
+    params: CompletionParams
+  ): Promise<CompletionResponse> {
+    // For now, just use the main API key
+    // In the future, this could decrypt and use the user's key
+    return this.createCompletion(params)
   }
 
   /**
