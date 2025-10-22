@@ -3,7 +3,6 @@
 import { useAuth } from '@/lib/firebase/auth-context'
 import { ProtectedRoute } from '@/components/auth/protected-route'
 import { AppLayout } from '@/components/layout/app-layout'
-import { ApiKeySetup } from '@/components/auth/api-key-setup'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -280,11 +279,6 @@ export default function ProfilePage() {
                 </div>
               </CardContent>
             </Card>
-
-            {/* API Key Setup - Only for Lifetime Users */}
-            {subscriptionData.paymentMode === 'LIFETIME' && (
-              <ApiKeySetup />
-            )}
 
             {/* Account Details */}
             <Card>
