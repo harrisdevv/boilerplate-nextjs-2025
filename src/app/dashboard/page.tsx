@@ -82,6 +82,21 @@ export default function DashboardPage() {
     checkAccess()
   }, [user?.uid])
 
+  // Check for payment success parameter
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search)
+      if (urlParams.get('payment') === 'success') {
+        // Clear the URL parameter
+        window.history.replaceState({}, '', window.location.pathname)
+        // Force re-check access
+        if (user?.uid) {
+          hasLifetimeAccess(user.uid).then(setHasAccess)
+        }
+      }
+    }
+  }, [user?.uid])
+
   if (loading) {
     return (
       <ProtectedRoute>

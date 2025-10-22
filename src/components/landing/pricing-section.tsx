@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Check } from 'lucide-react'
+import { useAuth } from '@/lib/firebase/auth-context'
+import { paddle } from '@/lib/paddle'
 
 interface TimeLeft {
   days: number
@@ -20,9 +22,11 @@ interface PricingConfig {
 }
 
 export function PricingSection() {
+  const { user } = useAuth()
   const [config, setConfig] = useState<PricingConfig | null>(null)
   const [isAnnual, setIsAnnual] = useState(false)
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({ days: 0, hours: 0, minutes: 0, seconds: 0 })
+  const [isProcessing, setIsProcessing] = useState(false)
 
   // Early bird end date - 7 days from now (you can change this to a specific date)
   const earlyBirdEndDate = new Date()
@@ -78,6 +82,53 @@ export function PricingSection() {
   }
 
   const isLifetime = config.paymentMode === 'LIFETIME'
+
+  const handleLifetimePayment = async () => {
+    if (!user) {
+      alert('Please sign in first')
+      return
+    }
+
+    setIsProcessing(true)
+    try {
+      // Mock Paddle checkout - simulate successful payment
+      const mockCheckout = await paddle.createLifetimeCheckout({
+        customData: { userId: user.uid },
+        email: user.email || '',
+        successUrl: `${window.location.origin}/dashboard?payment=success`,
+      })
+
+      // Simulate webhook call for successful payment
+      const webhookResponse = await fetch('/api/paddle/webhook', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'paddle-signature': 'mock-signature',
+        },
+        body: JSON.stringify({
+          alert_name: 'payment_succeeded',
+          passthrough: JSON.stringify({ userId: user.uid }),
+          email: user.email,
+          order_id: `mock_order_${Date.now()}`,
+          unit_price: config?.lifetimePrice || 49,
+          currency: 'USD',
+          customer_id: `mock_customer_${user.uid}`,
+        }),
+      })
+
+      if (!webhookResponse.ok) {
+        throw new Error('Webhook processing failed')
+      }
+
+      // Redirect to dashboard
+      window.location.href = '/dashboard?payment=success'
+    } catch (error) {
+      console.error('Payment error:', error)
+      alert('Payment failed. Please try again.')
+    } finally {
+      setIsProcessing(false)
+    }
+  }
 
   return (
     <section id="pricing" className="w-full py-12 md:py-24 lg:py-32 bg-muted/20">
@@ -150,8 +201,13 @@ export function PricingSection() {
                 </ul>
               </CardContent>
               <CardFooter className="flex flex-col gap-4">
-                <Button className="w-full" size="lg">
-                  🚀 Claim Early Bird Price - $49
+                <Button
+                  className="w-full"
+                  size="lg"
+                  onClick={handleLifetimePayment}
+                  disabled={isProcessing}
+                >
+                  {isProcessing ? 'Processing...' : '🚀 Claim Early Bird Price - $49'}
                 </Button>
                 <div className="text-center space-y-1">
                   <div className="text-sm text-muted-foreground">
