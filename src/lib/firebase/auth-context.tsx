@@ -39,29 +39,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user)
-
-      if (user) {
-        // Store the ID token in cookies for server-side verification
-        const token = await user.getIdToken()
-        document.cookie = `token=${token}; path=/; max-age=3600; samesite=strict${process.env.NODE_ENV === 'production' ? '; secure' : ''}`
-
-        // Sync user data with database via API endpoint
-        try {
-          await fetch('/api/auth/sync', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token }),
-          })
-        } catch (error) {
-          console.error('Error syncing user data:', error)
-        }
-      } else {
-        // Clear token cookie when user signs out
-        document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
-      }
-
       setLoading(false)
     })
 
@@ -92,9 +71,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const signOut = async () => {
-    // Clear token cookie before signing out
-    document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+  const signOut = () => {
     return firebaseSignOut(auth)
   }
 
