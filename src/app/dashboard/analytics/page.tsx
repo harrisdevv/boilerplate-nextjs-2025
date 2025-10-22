@@ -5,17 +5,22 @@ import { ProtectedRoute } from '@/components/auth/protected-route'
 import { AppLayout } from '@/components/layout/app-layout'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { 
-  TrendingUp, 
+import { hasLifetimeAccess } from '@/lib/auth'
+import { useEffect, useState } from 'react'
+import {
+  TrendingUp,
   TrendingDown,
-  Eye, 
-  Heart, 
+  Eye,
+  Heart,
   MessageCircle,
   Share,
   BarChart3,
   Calendar,
-  Users
+  Users,
+  Lock,
+  AlertTriangle
 } from 'lucide-react'
+import { PricingSection } from '@/components/landing/pricing-section'
 
 // Fake analytics data
 const fakeAnalyticsData = {
@@ -45,6 +50,8 @@ const fakeAnalyticsData = {
 
 export default function AnalyticsPage() {
   const { user } = useAuth()
+  const [hasAccess, setHasAccess] = useState<boolean | null>(null)
+  const [loading, setLoading] = useState(true)
 
   const userData = {
     id: user?.uid || '',
@@ -57,6 +64,64 @@ export default function AnalyticsPage() {
   const subscriptionData = {
     paymentMode: 'LIFETIME',
     status: 'ACTIVE'
+  }
+
+  useEffect(() => {
+    const checkAccess = async () => {
+      if (user?.uid) {
+        try {
+          const access = await hasLifetimeAccess(user.uid)
+          setHasAccess(access)
+        } catch (error) {
+          console.error('Error checking access:', error)
+          setHasAccess(false)
+        }
+      }
+      setLoading(false)
+    }
+
+    checkAccess()
+  }, [user?.uid])
+
+  if (loading) {
+    return (
+      <ProtectedRoute>
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-4 text-muted-foreground">Loading...</p>
+          </div>
+        </div>
+      </ProtectedRoute>
+    )
+  }
+
+  if (!hasAccess) {
+    return (
+      <ProtectedRoute>
+        <AppLayout user={userData} subscription={subscriptionData}>
+          <div className="p-6 space-y-6">
+            {/* Payment Required Header */}
+            <div className="text-center space-y-4 py-12">
+              <div className="flex items-center justify-center gap-2 text-destructive">
+                <Lock className="w-8 h-8" />
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <h1 className="text-3xl font-bold tracking-tight">Payment Required</h1>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+                To access analytics and all features, you need to purchase lifetime access.
+                This is a one-time payment that gives you unlimited access forever.
+              </p>
+            </div>
+
+            {/* Pricing Section */}
+            <div className="max-w-4xl mx-auto">
+              <PricingSection />
+            </div>
+          </div>
+        </AppLayout>
+      </ProtectedRoute>
+    )
   }
 
   return (
